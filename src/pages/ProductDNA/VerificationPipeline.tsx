@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
 import { STAGES } from "@/utils/pipeline";
+import { useSystemStatus } from "@/hooks/use-forge-store";
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -14,6 +15,7 @@ interface PipelineProps {
 export function VerificationPipeline({ activeIdx, review }: PipelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeNodeRef = useRef<HTMLAnchorElement>(null);
+  const systemStatus = useSystemStatus();
 
   const n = STAGES.length;
   const passedFrac = activeIdx / (n - 1);
@@ -29,16 +31,25 @@ export function VerificationPipeline({ activeIdx, review }: PipelineProps) {
     }
   }, [activeIdx]);
 
+  const counts: Record<string, string> = {
+    INTAKE: `${systemStatus.pipelineCounts.INTAKE.toLocaleString()} rows`,
+    FORGE: `${systemStatus.pipelineCounts.FORGE.toLocaleString()} normalized`,
+    PROVE: `${systemStatus.pipelineCounts.PROVE.toLocaleString()} verified`,
+    RESOLVE: `${systemStatus.pipelineCounts.RESOLVE.toLocaleString()} conflicts`,
+    PRODUCT_DNA: `${systemStatus.pipelineCounts.PRODUCT_DNA.toLocaleString()} canonical`,
+    SHIP: `${systemStatus.pipelineCounts.SHIP.toLocaleString()} ready`,
+  };
+
   return (
     <nav
       aria-label="Live Verification Process Pipeline"
-      className="relative mt-4 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-surface)] p-3 shadow-md"
+      className="relative mt-2 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-surface)] p-3 shadow-md"
     >
       <div
         ref={scrollRef}
         className="relative flex w-full items-center overflow-x-auto scrollbar-none"
       >
-        <div className="relative mx-auto flex min-w-[640px] flex-1 items-center justify-between px-6 sm:min-w-[700px]">
+        <div className="relative mx-auto flex min-w-[680px] flex-1 items-center justify-between px-6">
           {/* Continuous Baseline Wire */}
           <div
             aria-hidden
@@ -66,34 +77,13 @@ export function VerificationPipeline({ activeIdx, review }: PipelineProps) {
             />
           )}
 
-          {/* Traveling Laser Pulse along Pipeline */}
-          <motion.div
-            aria-hidden
-            className="absolute top-[16px] z-10 size-1.5 rounded-full bg-[var(--uf-accent)]"
-            style={{
-              boxShadow: "0 0 10px rgba(55,199,234,0.9)",
-            }}
-            initial={{ left: "32px", opacity: 0 }}
-            animate={{
-              left: ["32px", `calc(32px + (100% - 64px) * ${passedFrac})`],
-              opacity: [0, 1, 0.4],
-            }}
-            transition={{
-              duration: 2.2,
-              times: [0, 0.7, 1],
-              repeat: Infinity,
-              repeatDelay: 1,
-              ease: "easeInOut",
-            }}
-          />
-
           {/* Stage Nodes */}
           {STAGES.map((s, i) => {
             const passed = i < activeIdx;
             const active = i === activeIdx;
             const isReview = (s.stage === "RESOLVE" || active) && review;
-
             const stageNumber = String(i + 1).padStart(2, "0");
+            const realCountText = counts[s.stage] || "";
 
             return (
               <Link
@@ -129,7 +119,7 @@ export function VerificationPipeline({ activeIdx, review }: PipelineProps) {
                   )}
                 </div>
 
-                {/* Stage Label */}
+                {/* Stage Label & REAL COUNTS */}
                 <div className="flex flex-col items-center">
                   <span
                     className="text-[11px] font-extrabold uppercase tracking-tight [font-family:var(--uf-font-condensed)]"
@@ -143,10 +133,10 @@ export function VerificationPipeline({ activeIdx, review }: PipelineProps) {
                           : "var(--uf-text-tertiary)",
                     }}
                   >
-                    {s.label}
+                    {stageNumber} {s.label}
                   </span>
-                  <span className="uf-mono text-[8.5px] uppercase tracking-wider text-[var(--uf-text-tertiary)]">
-                    {active ? "CURRENT STEP" : passed ? "COMPLETED" : "PENDING"}
+                  <span className="uf-mono text-[9px] font-semibold tracking-wider text-cyan-400">
+                    {realCountText}
                   </span>
                 </div>
               </Link>

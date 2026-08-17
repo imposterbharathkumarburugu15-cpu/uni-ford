@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { forgeStore } from "@/store/forgeStore";
+import { forgeStore, type ViewMode, type PipelineStepState } from "@/store/forgeStore";
 import type {
   ActivityEvent,
   Conflict,
@@ -14,6 +14,14 @@ import type {
   SystemStatus,
 } from "@/types/domain";
 import { buildProductDna, shipQueueProducts } from "@/utils/pipeline";
+import type { ParsedWorkbook } from "@/ingestion/excelParser";
+import type { WorkbookProfile } from "@/ingestion/workbookProfiler";
+import type { ColumnMapping } from "@/mapping/columnMapper";
+import type { NormalizedRecord } from "@/normalization/valueNormalizer";
+import type { ResolvedEntityCluster } from "@/entity/entityResolver";
+import type { ExtractedProductAttributes } from "@/extraction/attributeExtractor";
+import type { EnrichedProductRecord } from "@/enrichment/enrichmentEngine";
+import type { CanonicalProductDNA } from "@/canonical/productDNAService";
 
 export function useForgeState(): ForgeState {
   return useSyncExternalStore(forgeStore.subscribe, forgeStore.getState);
@@ -82,8 +90,76 @@ export function useProductDna(productId?: string): ProductDna | undefined {
   return product ? buildProductDna(state, product) : undefined;
 }
 
-/** All products that have structured DNA (verified or in-flight). */
 export function useAllDna(): ProductDna[] {
   const state = useForgeState();
   return state.products.map((p) => buildProductDna(state, p));
+}
+
+// ------------------------------------------------------------
+// Hooks for Real Ingestion Pipeline
+// ------------------------------------------------------------
+
+export function useActiveWorkbook(): ParsedWorkbook | null {
+  useForgeState();
+  return forgeStore.getActiveWorkbook();
+}
+
+export function useWorkbookProfile(): WorkbookProfile | null {
+  useForgeState();
+  return forgeStore.getWorkbookProfile();
+}
+
+export function useSheetMappings(sheetName?: string): Record<string, ColumnMapping> {
+  useForgeState();
+  return forgeStore.getSheetMappings(sheetName);
+}
+
+export function useNormalizedRecords(): NormalizedRecord[] {
+  useForgeState();
+  return forgeStore.getNormalizedRecords();
+}
+
+export function useResolvedEntities(): ResolvedEntityCluster[] {
+  useForgeState();
+  return forgeStore.getResolvedEntities();
+}
+
+export function useExtractedAttributes(): ExtractedProductAttributes[] {
+  useForgeState();
+  return forgeStore.getExtractedAttributes();
+}
+
+export function useEnrichedProducts(): EnrichedProductRecord[] {
+  useForgeState();
+  return forgeStore.getEnrichedProducts();
+}
+
+export function useCanonicalDnaList(): CanonicalProductDNA[] {
+  useForgeState();
+  return forgeStore.getCanonicalDnaList();
+}
+
+export function useActiveSheetName(): string {
+  useForgeState();
+  return forgeStore.getActiveSheetName();
+}
+
+export function useActiveViewMode(): ViewMode {
+  useForgeState();
+  return forgeStore.getActiveViewMode();
+}
+
+export function usePipelineStepState(): PipelineStepState {
+  useForgeState();
+  return forgeStore.getPipelineStepState();
+}
+
+export function useIsProcessingPipeline(): boolean {
+  useForgeState();
+  return forgeStore.getIsProcessingPipeline();
+}
+
+export function useProcessingStepMessage(): string {
+  useForgeState();
+  return forgeStore.getProcessingStepMessage();
 }

@@ -1,27 +1,56 @@
 import type { ForgeState } from "@/types/domain";
-import { ACTIVITY } from "./activity";
-import { CONFLICTS, RESOLUTIONS } from "./conflicts";
-import { EVIDENCE } from "./evidence";
-import { PRODUCTS } from "./products";
-import { SHIPMENTS } from "./shipments";
-import { SOURCES } from "./sources";
-import { SUPPLIERS } from "./suppliers";
-import { SYSTEM_STATUS } from "./system";
 
 /**
- * Single assembly point for all mock data.
- * Services swap this for real FastAPI responses without touching the UI.
+ * Clean initial state factory.
+ * NO static mock products, conflicts, or pipeline counts.
+ * State starts empty until an Excel workbook is ingested.
  */
 export function createInitialState(): ForgeState {
   return {
-    suppliers: SUPPLIERS,
-    sources: SOURCES,
-    products: PRODUCTS,
-    evidence: EVIDENCE,
-    conflicts: CONFLICTS,
-    resolutions: RESOLUTIONS,
-    shipments: SHIPMENTS,
-    activity: ACTIVITY,
-    system: SYSTEM_STATUS,
+    suppliers: [],
+    sources: [],
+    products: [],
+    evidence: [],
+    conflicts: [],
+    resolutions: [],
+    shipments: [],
+    activity: [
+      {
+        id: "ACT-INIT",
+        timestamp: new Date().toISOString(),
+        type: "system",
+        severity: "info",
+        title: "UNIFORGE Pipeline Initialized",
+        detail: "Awaiting Excel workbook upload to generate Product DNA",
+      },
+    ],
+    system: {
+      pipelineCounts: {
+        INTAKE: 0,
+        FORGE: 0,
+        PROVE: 0,
+        RESOLVE: 0,
+        PRODUCT_DNA: 0,
+        SHIP: 0,
+      },
+      cohort: {
+        source: "No Excel Uploaded",
+        total: 0,
+        processed: 0,
+        verified: 0,
+        review: 0,
+        blocked: 0,
+      },
+      apiStatus: "OPERATIONAL",
+      lastSync: new Date().toISOString(),
+      intakeQueue: 0,
+      forgeQueue: 0,
+      proveQueue: 0,
+      resolveQueue: 0,
+      shipReady: 0,
+      sourceHealth: { healthy: 0, degraded: 0, critical: 0 },
+      operator: "DATA_ENGINEER",
+      operatorRole: "Master Data Administrator",
+    },
   };
 }

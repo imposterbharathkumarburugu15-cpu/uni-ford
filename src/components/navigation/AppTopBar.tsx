@@ -1,67 +1,95 @@
-import { Search } from "lucide-react";
-import { NavLink } from "react-router";
+import { motion } from "framer-motion";
+import { Search, Activity, Cpu, Bell, Shield, User } from "lucide-react";
+import { NavLink, useLocation } from "react-router";
 import { MODULES } from "@/app/config/modules";
 import { Logo } from "@/components/common/Logo";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { SystemStatusMenu } from "./SystemStatusMenu";
 import { UserMenu } from "./UserMenu";
+import { useSystemStatus } from "@/hooks/use-forge-store";
 
 export function AppTopBar({ onSearch }: { onSearch: () => void }) {
+  const location = useLocation();
+  const system = useSystemStatus();
+
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--uf-border)] bg-[var(--uf-bg-raised)]/95 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-cyan-500/20 bg-[#060913]/90 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
+      {/* Top Ambient Laser Edge */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+
+      <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center gap-3 px-3 sm:px-6 lg:px-8">
+        {/* Brand Logo */}
         <NavLink
           to="/command-center"
-          className="flex shrink-0 items-center gap-2 text-[15px] text-[var(--uf-text-primary)] sm:text-[16px]"
+          className="group flex shrink-0 items-center gap-2 text-slate-100 transition-all hover:scale-105"
           aria-label="UNIFORGE — Command Center"
         >
-          <Logo markClassName="text-[var(--uf-accent)]" />
+          <Logo markClassName="text-cyan-400 drop-shadow-[0_0_10px_rgba(55,199,234,0.6)]" />
         </NavLink>
 
+        {/* System Telemetry Status Pill */}
+        <div className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 uf-mono text-[10px] text-emerald-400">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+          <span className="font-bold tracking-widest uppercase">PIPELINE ONLINE</span>
+        </div>
+
+        {/* Primary Navigation Bar */}
         <nav
-          className="ml-1 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto scrollbar-none [mask-image:linear-gradient(to_right,transparent,black_8px,black_calc(100%-8px),transparent)] sm:ml-2 sm:[mask-image:none]"
+          className="ml-2 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto scrollbar-none"
           aria-label="Primary modules"
         >
-          {MODULES.map((m) => (
-            <NavLink
-              key={m.id}
-              to={m.path}
-              className={({ isActive }) =>
-                `relative whitespace-nowrap rounded-sm px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] [font-family:var(--uf-font-condensed)] transition-colors sm:px-2.5 sm:py-2 sm:text-[10.5px] sm:tracking-[0.12em] ${
+          {MODULES.map((m) => {
+            const isActive = location.pathname === m.path;
+            return (
+              <NavLink
+                key={m.id}
+                to={m.path}
+                className={`relative whitespace-nowrap rounded-lg px-3 py-1.5 uf-mono text-[11px] font-bold uppercase tracking-wider transition-all ${
                   isActive
-                    ? "text-[var(--uf-text-primary)]"
-                    : "text-[var(--uf-text-tertiary)] hover:text-[var(--uf-text-secondary)]"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {m.label}
-                  {isActive && (
-                    <span className="absolute inset-x-2 -bottom-px h-px bg-[var(--uf-accent)] shadow-[0_0_6px_rgba(55,199,234,0.8)]" aria-hidden />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+                    ? "text-cyan-300 font-black"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-topbar-pill"
+                    className="absolute inset-0 rounded-lg border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_15px_rgba(55,199,234,0.2)]"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">{m.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
+        {/* Right Actions */}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {/* Quick Search Command Palette Trigger */}
           <button
             type="button"
             onClick={onSearch}
-            className="flex h-8 items-center gap-1.5 rounded-sm border border-[var(--uf-border)] bg-[var(--uf-surface)] px-2 text-[var(--uf-text-tertiary)] transition-colors hover:border-[var(--uf-border-strong)] hover:text-[var(--uf-text-secondary)] sm:h-9 sm:gap-2 sm:px-2.5"
+            className="flex h-9 items-center gap-2 rounded-lg border border-slate-800 bg-[#0a0e1a] px-3 uf-mono text-xs text-slate-300 transition-all hover:border-cyan-500/40 hover:bg-slate-900 hover:text-slate-100 hover:shadow-[0_0_12px_rgba(55,199,234,0.15)]"
             aria-label="Search products, sources and conflicts"
           >
-            <Search className="size-3.5" aria-hidden />
-            <span className="hidden text-[11px] lg:inline">Search</span>
-            <span className="uf-kbd hidden md:inline">⌘K</span>
+            <Search className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="hidden lg:inline">Search Matrix</span>
+            <kbd className="hidden md:inline rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-700">
+              ⌘K
+            </kbd>
           </button>
+
           <NotificationsMenu />
           <SystemStatusMenu />
           <UserMenu />
         </div>
       </div>
+
+      {/* Bottom Glowing Laser Underline */}
+      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
     </header>
   );
 }
