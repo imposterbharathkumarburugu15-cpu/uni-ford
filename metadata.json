@@ -1,0 +1,6 @@
+{
+  "name": "UNIFORGE",
+  "description": "Product intelligence that turns fragmented supplier data into verified, traceable Product Truth.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
